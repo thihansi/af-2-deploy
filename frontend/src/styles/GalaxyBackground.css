@@ -1,0 +1,153 @@
+GalaxyBackground.css
+
+/* Main background gradient */
+.galaxy-bg {
+  position: relative;
+  background: linear-gradient(to bottom right, #070b34, #1a0b35, #0c0d30);
+  overflow: hidden;
+}
+
+/* Small stars - replacing box-shadow with radial gradients */
+.stars-small-1 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(1px 1px at 1983px 349px, rgba(255, 255, 255, 0.7) 100%, transparent),
+    radial-gradient(1px 1px at 1493px 549px, rgba(255, 255, 255, 0.7) 100%, transparent),
+    radial-gradient(1px 1px at 731px 333px, rgba(255, 255, 255, 0.7) 100%, transparent),
+    radial-gradient(1px 1px at 271px 154px, rgba(255, 255, 255, 0.7) 100%, transparent),
+    radial-gradient(1px 1px at 1175px 900px, rgba(255, 255, 255, 0.7) 100%, transparent),
+    radial-gradient(1px 1px at 698px 139px, rgba(255, 255, 255, 0.7) 100%, transparent),
+    radial-gradient(1px 1px at 1150px 689px, rgba(255, 255, 255, 0.7) 100%, transparent),
+    radial-gradient(1px 1px at 1530px 507px, rgba(255, 255, 255, 0.7) 100%, transparent),
+    radial-gradient(1px 1px at 642px 98px, rgba(255, 255, 255, 0.7) 100%, transparent),
+    radial-gradient(1px 1px at 420px 500px, rgba(255, 255, 255, 0.7) 100%, transparent);
+  animation: animStar 50s linear infinite;
+}
+
+/* Medium stars - replacing box-shadow with radial gradients */
+.stars-medium-1 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(1.5px 1.5px at 1583px 949px, rgba(255, 255, 255, 0.8) 100%, transparent),
+    radial-gradient(1.5px 1.5px at 1293px 449px, rgba(255, 255, 255, 0.8) 100%, transparent),
+    radial-gradient(1.5px 1.5px at 531px 1033px, rgba(255, 255, 255, 0.8) 100%, transparent),
+    radial-gradient(1.5px 1.5px at 171px 1054px, rgba(255, 255, 255, 0.8) 100%, transparent),
+    radial-gradient(1.5px 1.5px at 975px 500px, rgba(255, 255, 255, 0.8) 100%, transparent),
+    radial-gradient(1.5px 1.5px at 598px 939px, rgba(255, 255, 255, 0.8) 100%, transparent),
+    radial-gradient(1.5px 1.5px at 950px 289px, rgba(255, 255, 255, 0.8) 100%, transparent);
+  animation: animStar 100s linear infinite;
+}
+
+/* Large stars - replacing box-shadow with radial gradients */
+.stars-large-1 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(2px 2px at 783px 349px, rgba(255, 255, 255, 0.9) 100%, transparent),
+    radial-gradient(2px 2px at 893px 549px, rgba(255, 255, 255, 0.9) 100%, transparent),
+    radial-gradient(2px 2px at 431px 133px, rgba(255, 255, 255, 0.9) 100%, transparent),
+    radial-gradient(2px 2px at 371px 654px, rgba(255, 255, 255, 0.9) 100%, transparent),
+    radial-gradient(2px 2px at 575px 300px, rgba(255, 255, 255, 0.9) 100%, transparent);
+  animation: animStar 150s linear infinite;
+}
+
+/* Add some glow effects */
+.nebula-1 {
+  position: absolute;
+  top: 10%;
+  left: 30%;
+  width: 40%;
+  height: 40%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(116, 0, 184, 0.15) 0%,
+    rgba(65, 105, 225, 0.1) 50%,
+    transparent 70%
+  );
+  filter: blur(8px);
+  opacity: 0.7;
+}
+
+/* Star drift animation */
+@keyframes animStar {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-1000px);
+  }
+}
+
+/* Twinkle stars */
+.twinkle-1 {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background-color: #fff;
+  box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.9);
+  animation: twinkle 4s infinite;
+}
+
+/* Position twinkle stars */
+.twinkle-1a {
+  top: 15%;
+  left: 20%;
+  animation-delay: 0s;
+}
+
+.twinkle-1b {
+  top: 25%;
+  left: 80%;
+  animation-delay: 1s;
+}
+
+.twinkle-1c {
+  top: 60%;
+  left: 40%;
+  animation-delay: 2s;
+}
+
+.twinkle-1d {
+  top: 10%;
+  left: 70%;
+  animation-delay: 3s;
+}
+
+/* Add larger, more prominent glowing stars */
+.glow-star {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background-color: #fff;
+  border-radius: 50%;
+  filter: blur(0.5px);
+  box-shadow: 
+    0 0 10px 2px rgba(255, 255, 255, 0.8),
+    0 0 20px 5px rgba(135, 206, 250, 0.5);
+  animation: pulse 3s infinite alternate;
+}
+
+.glow-star:nth-child(1) { top: 20%; left: 15%; }
+.glow-star:nth-child(2) { top: 35%; left: 85%; animation-delay: 0.7s; }
+.glow-star:nth-child(3) { top: 65%; left: 30%; animation-delay: 1.4s; }
+.glow-star:nth-child(4) { top: 15%; left: 60%; animation-delay: 2.1s; }
+
+@keyframes twinkle {
+  0% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0.2; transform: scale(0.8); }
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
