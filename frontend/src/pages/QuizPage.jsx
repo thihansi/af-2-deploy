@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Confetti from 'react-confetti';
 import { getRandomCountries, generateQuizQuestion, saveQuizResult } from '../services/quizService';
-import QuizCard from '../components/QuizCard';
 import { useAuth } from '../context/AuthContext';
+
+import Navbar from '../components/Navbar';
+import SkyBackground from '../components/backgrounds/SkyBackground';
+import QuizCard from '../components/quiz/QuizCard';
+import QuizProgress from '../components/quiz/QuizProgress';
+import QuizResults from '../components/quiz/QuizResults';
 
 const QuizPage = () => {
   const [loading, setLoading] = useState(true);
@@ -12,67 +18,22 @@ const QuizPage = () => {
   const [score, setScore] = useState(0);
   const [showNextButton, setShowNextButton] = useState(false);
   const [quizComplete, setQuizComplete] = useState(false);
-  const { isAuthenticated, user } = useAuth();
+  const [showConfetti, setShowConfetti] = useState(false);
+  const { isAuthenticated } = useAuth();
   const [saveStatus, setSaveStatus] = useState(null);
   const totalQuestions = 10;
 
-  useEffect(() => {
-    console.log('Authentication status:', { 
-      isAuthenticated, 
-      user,
-      token: localStorage.getItem('accessToken')
-    });
-  }, [isAuthenticated, user]);
-
-  // Fetch countries and generate quiz questions
-  useEffect(() => {
-    const initializeQuiz = async () => {
-      try {
-        setLoading(true);
-        const fetchedCountries = await getRandomCountries(30); // Get 30 random countries
-        setCountries(fetchedCountries);
-        
-        // Generate all quiz questions at once
-        const generatedQuestions = Array.from({ length: totalQuestions }, (_, i) => 
-          generateQuizQuestion(fetchedCountries, i)
-        );
-        
-        setQuestions(generatedQuestions);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error initializing quiz:", error);
-        setLoading(false);
-      }
-    };
-
-    initializeQuiz();
-  }, []);
-
-  // Handle when user answers a question
-  const handleAnswer = (isCorrect) => {
-    if (isCorrect) {
-      setScore(prevScore => prevScore + 1);
-    }
-  };
-
-  // Go to next question
-  const goToNextQuestion = () => {
-    if (currentQuestion < totalQuestions - 1) {
-      setCurrentQuestion(prevQuestion => prevQuestion + 1);
+  // Initialize or restart quiz
+  const setupQuiz = async (isRestart = false) => {
+    if (isRestart) {
+      setQuizComplete(false);
+      setScore(0);
+      setCurrentQuestion(0);
       setShowNextButton(false);
-    } else {
-      setQuizComplete(true);
+      setSaveStatus(null);
     }
-  };
-
-  // Restart quiz
-  const restartQuiz = async () => {
-    setLoading(true);
-    setQuizComplete(false);
-    setScore(0);
-    setCurrentQuestion(0);
-    setShowNextButton(false);
     
+    setLoading(true);
     try {
       const fetchedCountries = await getRandomCountries(30);
       setCountries(fetchedCountries);
@@ -82,153 +43,203 @@ const QuizPage = () => {
       );
       
       setQuestions(generatedQuestions);
-      setLoading(false);
     } catch (error) {
-      console.error("Error restarting quiz:", error);
+      console.error(`Error ${isRestart ? 'restarting' : 'initializing'} quiz:`, error);
+    } finally {
       setLoading(false);
     }
   };
 
-  // Save quiz results when quiz completes
+  // Initial quiz setup
+  useEffect(() => {
+    setupQuiz();
+  }, []);
+
+  // Handle answer selection
+  const handleAnswer = (isCorrect) => {
+    if (isCorrect) {
+      setScore(prevScore => prevScore + 1);
+    }
+  };
+
+  // Go to next question or complete quiz
+  const goToNextQuestion = () => {
+    if (currentQuestion < totalQuestions - 1) {
+      setCurrentQuestion(prevQuestion => prevQuestion + 1);
+      setShowNextButton(false);
+    } else {
+      setQuizComplete(true);
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 8000);
+    }
+  };
+
+  // Save quiz results when completed
   useEffect(() => {
     const saveQuizResults = async () => {
-        if (quizComplete && isAuthenticated) {
-          try {
-            setSaveStatus('saving');
-            
-            // Create a simplified version to avoid sending huge country objects
-            const simplifiedQuestions = questions.map(q => ({
-              type: q.type,
-              question: q.question,
-              correctAnswer: q.type === 'flag' 
-                ? q.correctAnswer.name.common 
-                : (q.type === 'capital' ? q.correctAnswer.capital?.[0] : q.correctAnswer.name.common)
-            }));
-            
-            const quizData = {
-              score,
-              totalQuestions,
-              correctAnswers: score,
-              questions: simplifiedQuestions // Use the simplified version
-            };
-            
-            console.log('Sending simplified quiz data:', quizData);
-            
-            await saveQuizResult(quizData);
-            setSaveStatus('success');
-          } catch (error) {
-            console.error('Failed to save quiz results:', error);
-            setSaveStatus('error');
-          }
-        }
-      };
+      if (!quizComplete || !isAuthenticated) return;
+      
+      try {
+        setSaveStatus('saving');
+        
+        const simplifiedQuestions = questions.map(q => ({
+          type: q.type,
+          question: q.question,
+          correctAnswer: q.type === 'flag' 
+            ? q.correctAnswer.name.common 
+            : (q.type === 'capital' ? q.correctAnswer.capital?.[0] : q.correctAnswer.name.common)
+        }));
+        
+        const quizData = {
+          score,
+          totalQuestions,
+          correctAnswers: score,
+          questions: simplifiedQuestions
+        };
+        
+        await saveQuizResult(quizData);
+        setSaveStatus('success');
+      } catch (error) {
+        console.error('Failed to save quiz results:', error);
+        setSaveStatus('error');
+      }
+    };
     
-    if (quizComplete) {
-      saveQuizResults();
-    }
-  }, [quizComplete, isAuthenticated, score, totalQuestions, questions]);
+    saveQuizResults();
+  }, [quizComplete, isAuthenticated, questions, score, totalQuestions]);
 
+  // Progress message based on how far along in the quiz
+  const getProgressMessage = () => {
+    const progressPercent = currentQuestion / totalQuestions;
+    
+    if (progressPercent < 0.3) return "You're just getting started! 🚀";
+    if (progressPercent < 0.6) return "You're doing great! Keep going! 🌟";
+    if (progressPercent < 0.9) return "Almost there, space explorer! ✨";
+    return "Final questions ahead! You can do it! 🏆";
+  };
+
+  // Loading screen
   if (loading) {
     return (
-      <div className="min-h-screen pt-24 pb-12 flex items-center justify-center galaxy-bg">
-        <div className="text-center text-white">
-          <div className="mb-4 text-2xl">Loading quiz questions...</div>
-          <div className="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
+      <SkyBackground>
+        <div className="min-h-screen pt-16 md:pt-20">
+          <Navbar />
+          <div className="pt-12 flex items-center justify-center">
+            <div className="text-center text-white">
+              <div className="mb-6 text-2xl font-bold">Preparing Your Adventure!</div>
+              <div className="relative w-24 h-24 mx-auto">
+                <div className="absolute inset-0 rounded-full bg-indigo-600/30 animate-ping"></div>
+                <div className="relative flex items-center justify-center w-24 h-24 rounded-full bg-indigo-700/70">
+                  <span className="text-4xl animate-bounce">🚀</span>
+                </div>
+              </div>
+              <div className="mt-6 text-lg text-blue-200">Loading quiz questions...</div>
+            </div>
+          </div>
         </div>
-      </div>
+      </SkyBackground>
     );
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-12 galaxy-bg">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6">
-        <header className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-white mb-2">World Explorer Quiz</h1>
-          <p className="text-indigo-200">Test your knowledge of countries around the world!</p>
-          
-          {/* Progress bar */}
-          <div className="mt-6 mb-8 relative">
-            <div className="overflow-hidden h-3 text-xs flex rounded-full bg-indigo-900/40">
-              <div
-                style={{ width: `${(currentQuestion / totalQuestions) * 100}%` }}
-                className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-purple-600 to-indigo-600 transition-all duration-500"
-              ></div>
-            </div>
-            <div className="mt-2 text-white text-sm">
-              Question {currentQuestion + 1} of {totalQuestions}
-            </div>
-          </div>
-        </header>
-
-        {!quizComplete ? (
-          <div className="mb-8">
-            <AnimatePresence mode="wait">
-              <QuizCard 
-                key={currentQuestion} 
-                question={questions[currentQuestion]} 
-                onAnswer={handleAnswer}
-                showNext={() => setShowNextButton(true)} 
-              />
-            </AnimatePresence>
+    <SkyBackground>
+      <div className="min-h-screen pt-16 md:pt-20">
+        <Navbar />
+        
+        {showConfetti && <Confetti width={window.innerWidth} height={window.innerHeight} recycle={false} />}
+        
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-8 pb-12">
+          {/* Quiz header */}
+          <header className="mb-6 text-center">
+            <motion.h1 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-purple-400 to-blue-300 mb-2"
+            >
+              Space Explorer Quiz!
+            </motion.h1>
             
-            {showNextButton && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-8 flex justify-center"
+            <motion.p 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-indigo-200 text-lg"
+            >
+              Test your galaxy-sized knowledge of planet Earth!
+            </motion.p>
+            
+            {!quizComplete && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="mt-4 text-yellow-200 font-medium"
               >
-                <button 
-                  onClick={goToNextQuestion}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg transition-all"
-                >
-                  {currentQuestion === totalQuestions - 1 ? "Finish Quiz" : "Next Question"}
-                </button>
+                {getProgressMessage()}
               </motion.div>
             )}
-          </div>
-        ) : (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-indigo-900/40 backdrop-blur-md rounded-xl p-8 shadow-lg border border-indigo-500/30 text-center"
-          >
-            <h2 className="text-3xl font-bold text-white mb-4">Quiz Complete!</h2>
-            <div className="text-6xl font-bold text-indigo-300 mb-6">{score}/{totalQuestions}</div>
             
-            <div className="mb-8">
-              <p className="text-xl text-white">
-                {score === totalQuestions ? "Perfect score! You're a geography expert!" : 
-                 score >= totalQuestions * 0.8 ? "Excellent! You know your world geography!" :
-                 score >= totalQuestions * 0.6 ? "Good job! You have solid geography knowledge!" : 
-                 score >= totalQuestions * 0.4 ? "Not bad! Keep exploring to learn more!" :
-                 "Keep learning! The world has so much to explore!"}
-              </p>
-            </div>
-            
-            {!isAuthenticated && (
-              <div className="mb-8 p-4 bg-indigo-800/50 rounded-lg">
-                <p className="text-white">Sign in to save your quiz results and track your progress!</p>
-              </div>
+            {/* Progress bar */}
+            {!quizComplete && (
+              <QuizProgress 
+                currentQuestion={currentQuestion} 
+                totalQuestions={totalQuestions} 
+                score={score}
+              />
             )}
+          </header>
 
-            {isAuthenticated && (
-              <div className="mt-4">
-                {saveStatus === 'saving' && <p className="text-blue-300">Saving your results...</p>}
-                {saveStatus === 'success' && <p className="text-green-300">Results saved successfully!</p>}
-                {saveStatus === 'error' && <p className="text-red-300">Failed to save results. Please try again.</p>}
-              </div>
-            )}
-            
-            <button 
-              onClick={restartQuiz}
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg transition-all"
-            >
-              Play Again
-            </button>
-          </motion.div>
-        )}
+          {/* Main quiz content */}
+          {!quizComplete ? (
+            <div className="mb-8 relative">
+              {/* Star decoration */}
+              <div className="absolute -top-10 -left-10 text-yellow-300 text-opacity-30 text-5xl pointer-events-none">✦</div>
+              <div className="absolute -bottom-6 -right-6 text-blue-300 text-opacity-20 text-4xl pointer-events-none">★</div>
+              
+              {/* Quiz card */}
+              <AnimatePresence mode="wait">
+                <QuizCard 
+                  key={currentQuestion} 
+                  question={questions[currentQuestion]} 
+                  onAnswer={handleAnswer}
+                  showNext={() => setShowNextButton(true)} 
+                />
+              </AnimatePresence>
+              
+              {/* Next button */}
+              {showNextButton && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-8 flex justify-center"
+                >
+                  <button 
+                    onClick={goToNextQuestion}
+                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 
+                             text-white px-8 py-3 rounded-full font-semibold shadow-lg transition-all
+                             border-2 border-purple-400/30 transform hover:scale-105"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span>{currentQuestion === totalQuestions - 1 ? "Finish Quiz" : "Next Question"}</span>
+                      <span className="text-xl">🚀</span>
+                    </div>
+                  </button>
+                </motion.div>
+              )}
+            </div>
+          ) : (
+            <QuizResults
+              score={score}
+              totalQuestions={totalQuestions}
+              restartQuiz={() => setupQuiz(true)}
+              isAuthenticated={isAuthenticated}
+              saveStatus={saveStatus}
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </SkyBackground>
   );
 };
 

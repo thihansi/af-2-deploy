@@ -1,5 +1,5 @@
-import React, { createContext, useState, useEffect, useContext, useRef } from 'react';
-import { loginUser, registerUser, logoutUser, refreshAccessToken, getCurrentUser } from '../services/auth';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import api from "../services/api";
 
 const AuthContext = createContext();
 
@@ -7,95 +7,131 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const authInitializedRef = useRef(false); // Use ref instead of state to avoid re-renders
 
+  // Check if user is already logged in on mount
   useEffect(() => {
-    // Check if user is already logged in - only run once
-    const initAuth = async () => {
-      if (authInitializedRef.current) return;
-      authInitializedRef.current = true;
-      
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setLoading(false);
-        return; // No token, no need to make API calls
-      }
-      
+    const checkAuthStatus = async () => {
       try {
         setLoading(true);
-        const userData = await getCurrentUser();
-        setUser(userData);
+
+        // Get stored token
+        const token = localStorage.getItem("accessToken");
+
+        if (!token) {
+          // No token, not logged in
+          setLoading(false);
+          return;
+        }
+
+        // Set default authorization header
+        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+        // Check token validity
+        const response = await api.get("/api/auth/status");
+        setUser(response.data.user);
       } catch (err) {
-        console.error('Auth initialization failed:', err);
-        
-        // Don't attempt refresh if we're getting network errors
-        if (!err.message?.includes('Network Error')) {
-          try {
-            await refreshAccessToken();
-            const userData = await getCurrentUser();
-            setUser(userData);
-          } catch (refreshErr) {
-            console.error('Refresh token failed:', refreshErr);
-            setUser(null);
-            localStorage.removeItem('accessToken');
-          }
+        // Token might be expired, try to refresh
+        try {
+          await refreshToken();
+
+          // Check status again
+          const response = await api.get("/api/auth/status");
+          setUser(response.data.user);
+        } catch (refreshErr) {
+          // Refresh failed, clear everything
+          setUser(null);
+          localStorage.removeItem("accessToken");
+          delete api.defaults.headers.common["Authorization"];
         }
       } finally {
         setLoading(false);
       }
     };
 
-    initAuth();
+    checkAuthStatus();
   }, []);
 
+  // Refresh token function
+  const refreshToken = async () => {
+    const response = await api.post("/api/auth/refresh");
+    const { accessToken } = response.data;
+
+    localStorage.setItem("accessToken", accessToken);
+    api.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
+    return accessToken;
+  };
+
+  // Intercept 401 responses to attempt token refresh
+  useEffect(() => {
+    const interceptor = api.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+
+        // If error is 401 and we haven't tried to refresh yet
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+
+          try {
+            // Try to refresh the token
+            await refreshToken();
+
+            // Retry the original request
+            return api(originalRequest);
+          } catch (refreshError) {
+            // Refresh failed, log out
+            setUser(null);
+            localStorage.removeItem("accessToken");
+            delete api.defaults.headers.common["Authorization"];
+            return Promise.reject(refreshError);
+          }
+        }
+
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      // Remove the interceptor when the component unmounts
+      api.interceptors.response.eject(interceptor);
+    };
+  }, []);
+
+  // Login function
   const login = async (credentials) => {
     try {
-      setLoading(true);
       setError(null);
-      const data = await loginUser(credentials);
-      setUser(data.user);
-      return data;
+      const response = await api.post("/api/auth/login", credentials);
+      const { accessToken, user } = response.data;
+
+      // Save token to localStorage
+      localStorage.setItem("accessToken", accessToken);
+
+      // Set default header for API calls
+      api.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
+      // Update user state
+      setUser(user);
+
+      return user;
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.error || "Login failed");
       throw err;
-    } finally {
-      setLoading(false);
     }
   };
 
-  const register = async (userData) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await registerUser(userData);
-      setUser(data.user);
-      return data;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Logout function
   const logout = async () => {
     try {
-      setLoading(true);
-      await logoutUser();
-      setUser(null);
+      await api.post("/api/auth/logout");
     } catch (err) {
-      setError(err.message);
+      console.error("Logout API error:", err);
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const refreshToken = async () => {
-    try {
-      await refreshAccessToken();
-    } catch (err) {
+      // Clear user state and localStorage regardless of API success
       setUser(null);
-      throw err;
+      localStorage.removeItem("accessToken");
+      delete api.defaults.headers.common["Authorization"];
     }
   };
 
@@ -106,9 +142,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         error,
         login,
-        register,
         logout,
-        refreshToken,
         isAuthenticated: !!user,
       }}
     >
