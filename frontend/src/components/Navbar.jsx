@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/images/logo.png";
-// import "../styles/GalaxyBackground.css";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -64,8 +63,11 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Link to="/" className="flex items-center">
-              <img src={logo} alt="World Explorer Logo" className="h-12 w-12" />
+            <Link to="/" className="flex items-center group">
+              <div className="relative">
+                <div className="absolute -inset-1.5 bg-gradient-to-r from-indigo-500/40 to-purple-500/40 rounded-full opacity-50 group-hover:opacity-80 blur-sm group-hover:blur transition duration-300"></div>
+                <img src={logo} alt="World Explorer Logo" className="h-14 w-14 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+              </div>
               <span className="ml-3 text-white text-2xl font-bold drop-shadow">
                 World Explorer
               </span>
@@ -251,4 +253,3 @@ const NavItem = ({ to, label, mobile, onClick }) => (
 );
 
 export default Navbar;
-//test

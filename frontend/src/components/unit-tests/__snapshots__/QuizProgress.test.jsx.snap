@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`QuizProgress matches snapshot 1`] = `
+<div>
+  <div
+    class="mb-6 text-white"
+  >
+    <div
+      class="flex justify-between items-center mb-2"
+    >
+      <div>
+        Question 
+        5
+         of 
+        10
+      </div>
+      <div
+        class="flex items-center"
+      >
+        <span
+          class="material-icons mr-1"
+        >
+          stars
+        </span>
+        <span>
+          3
+        </span>
+      </div>
+    </div>
+    <div
+      class="bg-indigo-800/30 rounded-full h-3 overflow-hidden"
+    >
+      <div
+        animate="[object Object]"
+        aria-valuemax="100"
+        aria-valuemin="0"
+        aria-valuenow="50"
+        class="bg-gradient-to-r from-purple-500 to-indigo-500 h-full rounded-full"
+        initial="[object Object]"
+        role="progressbar"
+        transition="[object Object]"
+      />
+    </div>
+  </div>
+</div>
+`;
