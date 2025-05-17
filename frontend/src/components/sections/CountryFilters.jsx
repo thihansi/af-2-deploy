@@ -91,14 +91,14 @@ const CountryFilters = ({
                          ${(activeFilter === 'search' || isTyping) 
                            ? 'border-yellow-300 shadow-[0_0_15px_rgba(252,211,77,0.6)]' 
                            : 'border-blue-500'}`}
-              placeholder="Search for a country..."
+              placeholder="Search..."
             />
           </div>
 
-          {/* Region filter */}
-          <div className={`relative min-w-[110px] transition-all duration-500 transform ${activeFilter === 'region' ? 'scale-[1.02]' : ''}`}>
+          {/* Region filter - Increased width */}
+          <div className={`relative min-w-[150px] transition-all duration-500 transform ${activeFilter === 'region' ? 'scale-[1.02]' : ''}`}>
             <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-              <span className="text-sm text-yellow-300">🌎</span>
+              <FaGlobeAmericas className="h-4 w-4 text-yellow-300" />
             </div>
             <select
               id="region-filter"
@@ -129,7 +129,7 @@ const CountryFilters = ({
           {/* Population filter */}
           <div className={`relative min-w-[120px] transition-all duration-500 transform ${activeFilter === 'population' ? 'scale-[1.02]' : ''}`}>
             <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-              <span className="text-sm text-yellow-300">👪</span>
+              <FaUsers className="h-4 w-4 text-yellow-300" />
             </div>
             <select
               id="population-filter"
@@ -143,7 +143,7 @@ const CountryFilters = ({
                           ? 'border-yellow-300 shadow-[0_0_15px_rgba(252,211,77,0.6)]' 
                           : 'border-blue-500'}`}
             >
-              <option value="all">All Sizes</option>
+              <option value="all">Population</option>
               <option value="high">Giant (&gt;100M)</option>
               <option value="medium">Big (10M-100M)</option>
               <option value="low">Small (&lt;10M)</option>
@@ -158,7 +158,7 @@ const CountryFilters = ({
           {/* Sort order */}
           <div className={`relative min-w-[100px] transition-all duration-500 transform ${activeFilter === 'sort' ? 'scale-[1.02]' : ''}`}>
             <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-              <span className="text-sm text-yellow-300">✨</span>
+              <FaSortAmountDown className="h-4 w-4 text-yellow-300" />
             </div>
             <select
               id="sort-order"
@@ -174,8 +174,8 @@ const CountryFilters = ({
             >
               <option value="name-asc">A to Z</option>
               <option value="name-desc">Z to A</option>
-              <option value="population-high">Biggest</option>
-              <option value="population-low">Smallest</option>
+              <option value="population-high">Largest First</option>
+              <option value="population-low">Smallest First</option>
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-yellow-300">
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">

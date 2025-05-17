@@ -11,6 +11,8 @@ import QuizPage from "./pages/QuizPage";
 import ProfilePage from './pages/ProfilePage';
 import QuizResults from './pages/QuizResults';
 import Passport from './pages/Passport';
+import { FavoritesProvider } from './context/FavoritesContext';
+import FavoritesPage from './pages/FavoritesPage'; 
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
@@ -38,29 +40,32 @@ const App = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          <Route path="/login" element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          } />
-          <Route path="/signup" element={
-            <PublicRoute>
-              <Signup />
-            </PublicRoute>
-          } />
-          <Route path="/" element={<Home />} />
-          <Route path="/explore" element={<Explore />} />
-          <Route path="/countries/:id" element={<CountryPage />} /> 
-          <Route path="/continents/:continentName" element={<ContinentPage />} />
-          <Route path="/continents/:id" element={<Home />} /> {/* Placeholder - create ContinentDetail component later */}
-          <Route path="/quiz" element={<QuizPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/quiz-results" element={<QuizResults />} />
-          <Route path="/passport" element={<Passport />} />
-          
-        </Routes>
+        <FavoritesProvider>
+          <Routes>
+            <Route path="/login" element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            } />
+            <Route path="/signup" element={
+              <PublicRoute>
+                <Signup />
+              </PublicRoute>
+            } />
+            <Route path="/" element={<Home />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="/countries/:id" element={<CountryPage />} /> 
+            <Route path="/countries/name/:name" element={<CountryPage />} />
+            <Route path="/continents/:continentName" element={<ContinentPage />} />
+            <Route path="/continents/:id" element={<Home />} />
+            <Route path="/quiz" element={<QuizPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/quiz-results" element={<QuizResults />} />
+            <Route path="/passport" element={<Passport />} />
+            <Route path="/favorites" element={<FavoritesPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </FavoritesProvider>
       </AuthProvider>
     </BrowserRouter>
   );

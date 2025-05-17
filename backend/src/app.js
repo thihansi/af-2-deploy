@@ -3,12 +3,17 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
+import favoritesRoutes from './routes/favoritesRoutes.js';
+
 const app = express();
 
 // Configure CORS
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://world-explorer-pytx4lrk3-thihansi-gunawardenas-projects.vercel.app'],
-  credentials: true
+  origin: [
+    'http://localhost:5173',
+    'https://world-explorer-app-git-main-thihansi-gunawardenas-projects.vercel.app',
+    'https://world-explorer-pytx4lrk3-thihansi-gunawardenas-projects.vercel.app'
+  ],  credentials: true
 }));
 
 app.use(express.json());
@@ -16,6 +21,7 @@ app.use(cookieParser());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/quiz', quizRoutes);
+app.use('/api/favorites', favoritesRoutes);
 
 // Add global error handling middleware
 app.use((err, req, res, next) => {

@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema({
     }
   },
   avatar: { type: String, default: "lion" },
+  favoriteCountries: [{ 
+    type: String,
+    ref: 'Country'
+  }],
 }, { timestamps: true });
 
 userSchema.pre("save", async function (next) {

@@ -10,6 +10,7 @@ const Navbar = () => {
   const profileMenuRef = useRef(null);
   const navigate = useNavigate();
 
+  // Existing handler functions remain the same
   const handleLogout = async () => {
     try {
       await logout();
@@ -18,10 +19,12 @@ const Navbar = () => {
     }
   };
 
-  // Close the profile menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
         setProfileMenuOpen(false);
       }
     }
@@ -60,34 +63,42 @@ const Navbar = () => {
       </div>
 
       <div className="relative z-10 backdrop-blur-sm bg-black/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-2 sm:px-4 lg:px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Link to="/" className="flex items-center group">
-              <div className="relative">
-                <div className="absolute -inset-1.5 bg-gradient-to-r from-indigo-500/40 to-purple-500/40 rounded-full opacity-50 group-hover:opacity-80 blur-sm group-hover:blur transition duration-300"></div>
-                <img src={logo} alt="World Explorer Logo" className="h-14 w-14 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
-              </div>
-              <span className="ml-3 text-white text-2xl font-bold drop-shadow">
-                World Explorer
-              </span>
-            </Link>
-
-            {/* Links */}
-            <div className="hidden md:flex space-x-6">
-              <NavItem to="/" label="Home" />
-              <NavItem to="/continents" label="Continents" />
-              <NavItem to="/countries" label="Countries" />
-              <NavItem to="/quiz" label="Quiz" />
+            <div className="flex-shrink-0">
+              <Link to="/" className="flex items-center group">
+                <div className="relative">
+                  <div className="absolute -inset-1.5 bg-gradient-to-r from-indigo-500/40 to-purple-500/40 rounded-full opacity-50 group-hover:opacity-80 blur-sm group-hover:blur transition duration-300"></div>
+                  <img
+                    src={logo}
+                    alt="World Explorer Logo"
+                    className="h-14 w-14 relative z-10 group-hover:rotate-12 transition-transform duration-300"
+                  />
+                </div>
+                <span className="ml-3 text-white text-2xl font-bold drop-shadow">
+                  World Explorer
+                </span>
+              </Link>
             </div>
 
-            {/* User */}
-            <div className="hidden md:flex items-center space-x-4">
+            {/* Links - Centered with auto margins */}
+            <div className="hidden md:flex mx-auto">
+              <div className="flex space-x-8">
+                <NavItem to="/" label="Home" />
+                <NavItem to="/favorites" label="Favorites" />
+                <NavItem to="/explore" label="Explore Globe" />
+                <NavItem to="/quiz" label="Quiz" />
+              </div>
+            </div>
+
+            {/* User - Right aligned with less padding */}
+            <div className="flex items-center">
               {isAuthenticated ? (
                 <div className="flex items-center bg-indigo-900/40 rounded-full border border-purple-400 px-4 py-2 relative">
-                  <a 
-                    href="#" 
-                    onClick={handleProfileClick} 
+                  <a
+                    href="#"
+                    onClick={handleProfileClick}
                     className="flex items-center"
                   >
                     <div className="w-9 h-9 bg-gradient-to-r from-indigo-700 to-purple-800 rounded-full flex items-center justify-center text-white font-bold">
@@ -97,41 +108,74 @@ const Navbar = () => {
                       {user?.username || "Explorer"}
                     </span>
                   </a>
-                  
+
                   {/* Profile Dropdown Menu */}
                   {profileMenuOpen && (
-                    <div 
+                    <div
                       ref={profileMenuRef}
                       className="absolute right-0 mt-2 top-full w-48 rounded-md shadow-lg bg-indigo-900/90 backdrop-blur-sm border border-purple-500/50 z-50 overflow-hidden"
                     >
                       <div className="py-1">
                         <button
-                          onClick={() => handleMenuOption('/profile')}
+                          onClick={() => handleMenuOption("/profile")}
                           className="w-full text-left px-4 py-2 text-white hover:bg-indigo-700/70 flex items-center"
                         >
-                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          <svg
+                            className="w-4 h-4 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                            />
                           </svg>
                           View Profile
                         </button>
                         <button
-                          onClick={() => handleMenuOption('/quiz-results')}
+                          onClick={() => handleMenuOption("/quiz-results")}
                           className="w-full text-left px-4 py-2 text-white hover:bg-indigo-700/70 flex items-center"
                         >
-                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                          <svg
+                            className="w-4 h-4 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                            />
                           </svg>
                           View Quiz Results
                         </button>
-                        <button
-                          onClick={() => handleMenuOption('/passport')}
+                        {/* <button
+                          onClick={() => handleMenuOption("/passport")}
                           className="w-full text-left px-4 py-2 text-white hover:bg-indigo-700/70 flex items-center"
                         >
-                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                          <svg
+                            className="w-4 h-4 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"
+                            />
                           </svg>
                           View Passport
-                        </button>
+                        </button> */}
                       </div>
                     </div>
                   )}
@@ -153,8 +197,8 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* Mobile */}
-            <div className="md:hidden">
+            {/* Mobile menu button */}
+            <div className="md:hidden ml-2">
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="text-white p-2"
@@ -175,14 +219,14 @@ const Navbar = () => {
               onClick={() => setIsOpen(false)}
             />
             <NavItem
-              to="/continents"
-              label="Continents"
+              to="/explore"
+              label="Explore Globe"
               mobile
               onClick={() => setIsOpen(false)}
             />
             <NavItem
-              to="/countries"
-              label="Countries"
+              to="/favorites"
+              label="Favorites"
               mobile
               onClick={() => setIsOpen(false)}
             />
@@ -206,12 +250,12 @@ const Navbar = () => {
                   mobile
                   onClick={() => setIsOpen(false)}
                 />
-                <NavItem
+                {/* <NavItem
                   to="/passport"
                   label="View Passport"
                   mobile
                   onClick={() => setIsOpen(false)}
-                />
+                /> */}
                 <button
                   onClick={() => {
                     handleLogout();
